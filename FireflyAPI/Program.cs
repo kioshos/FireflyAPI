@@ -1,5 +1,7 @@
 using FireflyAPI.Application.Interfaces;
+using FireflyAPI.Domain.Entities;
 using FireflyAPI.Infrastructure;
+using FireflyAPI.Infrastructure.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,12 @@ builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRepository<Project>, ProjectRepository>();
+builder.Services.AddScoped<IRepository<Activity>, ActivityRepository>();
+builder.Services.AddScoped<IRepository<Resource>, ResourceRepository>();
+builder.Services.AddScoped<IResourceRequirementRepository, ResourceRequirementRepository>();
+builder.Services.AddScoped<IActivityDependencyRepository, ActivityDependencyRepository>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
