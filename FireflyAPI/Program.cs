@@ -1,7 +1,9 @@
 using FireflyAPI.Application.Interfaces;
+using FireflyAPI.Application.Services;
 using FireflyAPI.Domain.Entities;
 using FireflyAPI.Infrastructure;
 using FireflyAPI.Infrastructure.Repository;
+using FireflyAPI.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,13 @@ builder.Services.AddScoped<IRepository<Activity>, ActivityRepository>();
 builder.Services.AddScoped<IRepository<Resource>, ResourceRepository>();
 builder.Services.AddScoped<IResourceRequirementRepository, ResourceRequirementRepository>();
 builder.Services.AddScoped<IActivityDependencyRepository, ActivityDependencyRepository>();
+
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<ResourceService>();
+builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<ActivityService>();
+
 
 var app = builder.Build();
 
