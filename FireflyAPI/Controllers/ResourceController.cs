@@ -46,4 +46,12 @@ public class ResourceController : ControllerBase
 
         return NoContent();
     }
+    
+    [HttpPost("dependencies")]
+    public async Task<IActionResult> AssignResources([FromBody] AssignResourcesRequestDto assignResourcesRequestDto,
+        CancellationToken ct)
+    {
+        await _resourceService.AssignResourcesToActivity(assignResourcesRequestDto, ct);
+        return Ok();
+    }
 }

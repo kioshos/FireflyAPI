@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using FireflyAPI.Application.Interfaces;
 using FireflyAPI.Domain.Entities;
 using FireflyAPI .Application.Dtos;
@@ -8,11 +9,18 @@ public class ResourceService
 {
     private readonly IRepository<Resource> _resourceRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IResourceRequirementRepository _resourceRequirementRepository;
+    private readonly IRepository<Activity> _activityRepository;
 
-    public ResourceService(IRepository<Resource> resourceRepository, IProjectRepository projectRepository)
+    public ResourceService(IRepository<Resource> resourceRepository, 
+        IProjectRepository projectRepository, IResourceRequirementRepository resourceRequirementRepository,
+        IRepository<Activity> activityRepository)
     {
         _resourceRepository = resourceRepository;
         _projectRepository = projectRepository;
+        _resourceRequirementRepository = resourceRequirementRepository;
+        _activityRepository = activityRepository;
+        
     }
     
     public async Task<IEnumerable<Resource>> GetProjectResources(Guid projectId, CancellationToken cancellationToken = default)
@@ -58,4 +66,25 @@ public class ResourceService
 
         await _resourceRepository.DeleteAsync(resource, cancellationToken);
     }
+
+    public async Task AssignResourcesToActivity(AssignResourcesRequestDto assignResourcesRequestDto,
+        CancellationToken cancellationToken = default)
+    {
+        var resource = await _resourceRepository.GetByIdAsync(assignResourcesRequestDto.ResourceId, cancellationToken);
+        if (resource == null)
+            throw new Exception("Resource was not found!");
+        var activity = await _activityRepository.GetByIdAsync(assignResourcesRequestDto.ActivityId, cancellationToken);
+        if (activity == null)
+            throw new Exception("Activity was not found!");
+        
+        if(activity.ProjectId != resource.ProjectId)
+            throw new Exception("Different project!");
+
+        ResourceRequirement resourceRequirement = new ResourceRequirement(assignResourcesRequestDto.ActivityId,
+            assignResourcesRequestDto.ResourceId, assignResourcesRequestDto.Amount);
+        
+        await _resourceRequirementRepository.AddAsync(resourceRequirement, cancellationToken);
+
+    }
+    
 }
