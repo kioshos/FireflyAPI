@@ -25,9 +25,12 @@ builder.Services.AddScoped<IActivityDependencyRepository, ActivityDependencyRepo
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
+builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
+builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 builder.Services.AddScoped<ResourceService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<ActivityService>();
+
 
 
 var app = builder.Build();

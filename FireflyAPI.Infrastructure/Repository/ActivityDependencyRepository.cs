@@ -51,4 +51,9 @@ public class ActivityDependencyRepository : IActivityDependencyRepository
                 td => td.ActivityId == taskId &&
                       td.PredecessorActivityId == predecessorId, cancellationToken);
     }
+
+    public async Task<IEnumerable<ActivityDependency>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ActivityDependencies.Where(ad => ad.ActivityId== activityId).ToListAsync(cancellationToken);
+    }
 }

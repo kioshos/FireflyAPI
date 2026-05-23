@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FireflyAPI.Infrastructure.Repository;
 
-public class ActivityRepository : IRepository<Activity>
+public class ActivityRepository : IActivityRepository
 {
     private readonly ApiDbContext _dbContext;
 
@@ -47,5 +47,21 @@ public class ActivityRepository : IRepository<Activity>
     {
         _dbContext.Activities.Remove(entity);
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Activity>> GetByProjectIdAsync(Guid projectId, CancellationToken cancellationToken = default)
+    {
+       return await _dbContext.Activities
+           .Where(a => a.ProjectId == projectId)
+           .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Activity>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Activities
+            .AsNoTracking()
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync(cancellationToken);
+
     }
 }
