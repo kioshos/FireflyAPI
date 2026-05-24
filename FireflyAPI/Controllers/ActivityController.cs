@@ -43,4 +43,19 @@ public class ActivityController : ControllerBase
         await _activityService.AssignPredecessors(assignPredecessorsRequestDto, ct);
         return Ok();
     }
+
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetActivityById(Guid id, CancellationToken ct)
+    {
+        try
+        {
+           var activityDetails = await _activityService.GetActivityDetails(id, ct);
+            return Ok(activityDetails);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

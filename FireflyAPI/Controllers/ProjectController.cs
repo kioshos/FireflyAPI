@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FireflyAPI.Controllers;
 
 [ApiController]
-[Route("/projects")]
+[Route("projects")]
 public class ProjectController : ControllerBase
 {
     private readonly ProjectService _projectService;
@@ -48,5 +48,11 @@ public class ProjectController : ControllerBase
         return Ok();
     }
 
-    
+    [Authorize]
+    [HttpPost()]
+    public async Task<IActionResult> CreateProject(CreateProjectRequestDto request, CancellationToken ct)
+    {
+        await _projectService.CreateProject(request, ct);
+        return Ok(new { message = "Project created successfully" });
+    }
 }

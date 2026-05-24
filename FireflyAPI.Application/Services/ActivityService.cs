@@ -61,6 +61,7 @@ public class ActivityService
     public async Task<ActivityDetailDto> GetActivityDetails(Guid activityId,
         CancellationToken cancellationToken = default)
     {
+        
         var activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
 
         if (activity == null)

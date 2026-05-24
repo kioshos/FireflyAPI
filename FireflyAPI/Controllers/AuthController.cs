@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
             if (user == null)
                 return BadRequest("Google login failed");
 
-            return Redirect("http://localhost:5173");
+            return Redirect("http://localhost:5173/main");
         }
         catch (Exception ex)
         {
