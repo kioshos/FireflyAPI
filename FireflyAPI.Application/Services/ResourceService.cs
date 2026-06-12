@@ -70,21 +70,28 @@ public class ResourceService
     public async Task AssignResourcesToActivity(AssignResourcesRequestDto assignResourcesRequestDto,
         CancellationToken cancellationToken = default)
     {
-        var resource = await _resourceRepository.GetByIdAsync(assignResourcesRequestDto.ResourceId, cancellationToken);
-        if (resource == null)
-            throw new Exception("Resource was not found!");
         var activity = await _activityRepository.GetByIdAsync(assignResourcesRequestDto.ActivityId, cancellationToken);
+        
         if (activity == null)
             throw new Exception("Activity was not found!");
         
-        if(activity.ProjectId != resource.ProjectId)
-            throw new Exception("Different project!");
+        foreach (var resourceDto in assignResourcesRequestDto.Resources)
+        {
+            var resource = await _resourceRepository.GetByIdAsync(resourceDto.ResourceId, cancellationToken);
 
-        ResourceRequirement resourceRequirement = new ResourceRequirement(assignResourcesRequestDto.ActivityId,
-            assignResourcesRequestDto.ResourceId, assignResourcesRequestDto.Amount);
-        
-        await _resourceRequirementRepository.AddAsync(resourceRequirement, cancellationToken);
+            if (resource == null)
+                throw new Exception("Resource was not found!");
 
+            if (resource.ProjectId != activity.ProjectId)
+                throw new Exception("Different project!");
+
+            var requirement = new ResourceRequirement(
+                activity.Id,
+                resource.Id,
+                resourceDto.Amount);
+
+            await _resourceRequirementRepository.AddAsync(requirement, cancellationToken);
+        }
     }
     
 }

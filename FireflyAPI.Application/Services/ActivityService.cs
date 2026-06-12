@@ -24,6 +24,11 @@ public class ActivityService
         return result;
     }
 
+    public async Task<IEnumerable<Activity>> GetActivitiesByProjectId(Guid projectId, CancellationToken ct)
+    {
+        var result = await _activityRepository.GetByProjectIdAsync(projectId, ct);
+        return result;
+    }
     public async Task<Guid> CreateActivity(Guid projectId,CreateActivityRequestDto activityRequestDto,
         CancellationToken ct =  default)
     {
@@ -42,20 +47,29 @@ public class ActivityService
     public async Task AssignPredecessors(AssignPredecessorsRequestDto predecessorsRequestDto,
         CancellationToken cancellationToken = default)
     {
-       var activity = await _activityRepository.GetByIdAsync(predecessorsRequestDto.ActivityId, cancellationToken);
-       if (activity == null)
-           throw new Exception("Activity was not found!");
+        var activity = await _activityRepository.GetByIdAsync(predecessorsRequestDto.ActivityId, cancellationToken);
+        if (activity == null)
+            throw new Exception("Activity was not found!");
        
-       var predecessor = await _activityRepository.GetByIdAsync(predecessorsRequestDto.PredecessorId, cancellationToken);
-       if (predecessor == null)
-           throw new Exception("Predecessor was not found!");
+        var predecessors = await _activityRepository.GetByIdsAsync(predecessorsRequestDto.PredecessorIds, 
+            cancellationToken);
        
-       if(predecessor.ProjectId != activity.ProjectId)
-           throw new Exception("Activities from different project!");
+        if (predecessors.Count() != predecessorsRequestDto.PredecessorIds.Count)
+            throw new Exception("One or more predecessors were not found.");
+       
+        foreach (var predecessor in predecessors)
+        {
+            if (predecessor.ProjectId != activity.ProjectId)
+                throw new Exception("Activities from different project!");
 
-       ActivityDependency activityDependency = new ActivityDependency(predecessorsRequestDto.ActivityId, predecessorsRequestDto.PredecessorId);
+            var dependency = new ActivityDependency(
+                activity.Id,
+                predecessor.Id);
 
-       await _activityDependencyRepository.AddAsync(activityDependency, cancellationToken);
+            await _activityDependencyRepository.AddAsync(
+                dependency,
+                cancellationToken);
+        }
     }
 
     public async Task<ActivityDetailDto> GetActivityDetails(Guid activityId,

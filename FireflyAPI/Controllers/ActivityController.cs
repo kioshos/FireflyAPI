@@ -18,9 +18,9 @@ public class ActivityController : ControllerBase
     
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetActivities(CancellationToken ct)
+    public async Task<IActionResult> GetActivities([FromRoute]Guid projectId, CancellationToken ct)
     {
-        var result = await _activityService.GetActivities(ct);
+        var result = await _activityService.GetActivitiesByProjectId(projectId, ct);
 
         return Ok(result);
     }
