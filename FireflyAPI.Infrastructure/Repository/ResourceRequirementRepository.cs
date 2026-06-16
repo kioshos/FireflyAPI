@@ -58,4 +58,9 @@ public class ResourceRequirementRepository : IResourceRequirementRepository
             .Where(rr => rr.ActivityId == taskId)
             .ToListAsync(cancellationToken);
     }
+
+    public Task<IEnumerable<ResourceRequirement>> GetByTaskIdsAsync(List<Guid> taskIds, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 }

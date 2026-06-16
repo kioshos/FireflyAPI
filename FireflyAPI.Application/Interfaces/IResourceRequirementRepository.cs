@@ -6,4 +6,5 @@ public interface IResourceRequirementRepository : IRepository<ResourceRequiremen
 {
     Task<ResourceRequirement?> GetByCompositeKeysAsync(Guid taskId, Guid resourceId, CancellationToken cancellationToken = default);
     Task<IEnumerable<ResourceRequirement>> GetByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<ResourceRequirement>> GetByTaskIdsAsync(List<Guid> taskIds, CancellationToken cancellationToken = default);
 }

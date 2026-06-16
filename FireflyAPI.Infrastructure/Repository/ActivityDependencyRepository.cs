@@ -54,6 +54,17 @@ public class ActivityDependencyRepository : IActivityDependencyRepository
 
     public async Task<IEnumerable<ActivityDependency>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ActivityDependencies.Where(ad => ad.ActivityId== activityId).ToListAsync(cancellationToken);
+        return await _dbContext.ActivityDependencies
+            .AsNoTracking()
+            .Where(d => d.ActivityId == activityId)
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<IEnumerable<ActivityDependency>> GetByActivityIdsAsync(List<Guid> activityIds, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.ActivityDependencies
+            .AsNoTracking()
+            .Where(d => activityIds.Contains(d.ActivityId))
+            .ToListAsync(cancellationToken);
     }
 }

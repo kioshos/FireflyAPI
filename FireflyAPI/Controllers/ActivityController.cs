@@ -20,7 +20,8 @@ public class ActivityController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetActivities([FromRoute]Guid projectId, CancellationToken ct)
     {
-        var result = await _activityService.GetActivitiesByProjectId(projectId, ct);
+        var result = await _activityService.GetActivities(projectId, ct);
+
 
         return Ok(result);
     }
@@ -57,5 +58,22 @@ public class ActivityController : ControllerBase
         {
             return BadRequest(e.Message);
         }
+    }
+    [Authorize]
+    [HttpPatch("{activityId}")]
+    public async Task<IActionResult> EditActivity([FromRoute] Guid activityId, [FromBody] EditActivityRequestDto request,
+        CancellationToken ct)
+    {
+        await _activityService.Edit(activityId, request, ct);
+
+        return Ok();
+    }
+    
+    [Authorize]
+    [HttpDelete("{activityId:guid}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid activityId, CancellationToken ct = default)
+    {
+        await _activityService.DeleteActivity(activityId, ct);
+        return NoContent();
     }
 }

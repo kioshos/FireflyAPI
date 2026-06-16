@@ -27,6 +27,6 @@ public class ResourceRequirementConfiguration : IEntityTypeConfiguration<Resourc
         builder.HasOne<Resource>()
             .WithMany()
             .HasForeignKey(rr => rr.ResourceId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

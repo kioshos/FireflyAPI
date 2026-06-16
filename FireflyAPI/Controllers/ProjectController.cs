@@ -55,4 +55,12 @@ public class ProjectController : ControllerBase
         await _projectService.CreateProject(request, ct);
         return Ok(new { message = "Project created successfully" });
     }
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProject([FromRoute] Guid id, CancellationToken ct)
+    {
+        await _projectService.DeleteProject(id, ct);
+
+        return NoContent();
+    }
 }

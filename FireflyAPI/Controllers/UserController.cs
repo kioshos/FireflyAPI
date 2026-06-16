@@ -23,7 +23,7 @@ public class UserController : ControllerBase
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             return Unauthorized();
-        var result = await _projectService.GetUserProjects(userId, cancellationToken);
+        var result = await _projectService.GetUserProjects(cancellationToken);
         return Ok(result);
     }
 }

@@ -104,4 +104,69 @@ public class ActivityService
             Predecessors = predecessors
         };
     }
+    public async Task DeleteActivity(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        var activity = await _activityRepository.GetByIdAsync(activityId, cancellationToken);
+
+        if (activity == null)
+            throw new Exception("Activity was not found!");
+
+        await _activityRepository.DeleteAsync(activity, cancellationToken);
+    }
+    public async Task Edit(Guid activityId, EditActivityRequestDto request, CancellationToken ct = default)
+    {
+        var activity = await _activityRepository.GetByIdAsync(activityId, ct);
+
+        if (activity == null)
+            throw new Exception("Activity was not found!");
+
+        activity.Name = request.Name;
+        activity.Duration = request.Duration;
+
+        await _activityRepository.UpdateAsync(activity, ct);
+    }
+    public async Task<IEnumerable<ActivityDetailDto>> GetActivities(Guid projectId, CancellationToken ct)
+    {
+        var activities = await _activityRepository.GetByProjectIdAsync(projectId, ct);
+
+        var activityIds = activities.Select(a => a.Id).ToList();
+        var dependencies = await _activityDependencyRepository.GetByActivityIdsAsync(activityIds, ct);
+
+        var groupedDeps = dependencies
+            .GroupBy(d => d.ActivityId)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Select(d => d.PredecessorActivityId).ToList()
+            );
+
+        var predecessorIds = dependencies
+            .Select(d => d.PredecessorActivityId)
+            .Distinct()
+            .ToList();
+        
+        var predecessorActivities = await _activityRepository.GetByIdsAsync(predecessorIds, ct);
+        
+        var predecessorMap = predecessorActivities.ToDictionary(p => p.Id);
+
+        return activities.Select(a => new ActivityDetailDto
+        {
+            Id = a.Id,
+            Name = a.Name,
+            Duration = a.Duration,
+
+            Predecessors = groupedDeps.ContainsKey(a.Id)
+                ? groupedDeps[a.Id]
+                    .Where(id => predecessorMap.ContainsKey(id))
+                    .Select(id => predecessorMap[id])
+                    .Select(p => new ActivityDto
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Duration = p.Duration
+                    })
+                    .ToList()
+                : new List<ActivityDto>()
+        });
+    }
+
 }

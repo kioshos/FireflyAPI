@@ -1,4 +1,4 @@
-namespace FireflyAPI.Application.Dtos;
+﻿namespace FireflyAPI.Application.Dtos;
 
 public sealed class ResourceDto
 {
