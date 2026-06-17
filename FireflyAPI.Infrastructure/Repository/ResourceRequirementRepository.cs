@@ -51,6 +51,16 @@ public class ResourceRequirementRepository : IResourceRequirementRepository
                       td.ResourceId == resourceId, cancellationToken);
     }
 
+    public async Task DeleteByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.ResourceRequirements
+            .Where(x => x.ActivityId == activityId)
+            .ToListAsync(cancellationToken);
+
+        _dbContext.ResourceRequirements.RemoveRange(entities);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<ResourceRequirement>> GetByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ResourceRequirements
@@ -66,4 +76,5 @@ public class ResourceRequirementRepository : IResourceRequirementRepository
             .Where(r => taskIds.Contains(r.ActivityId))
             .ToListAsync(cancellationToken);
     }
+    
 }

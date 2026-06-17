@@ -4,4 +4,5 @@ public sealed class CreateActivityRequestDto
 {
     public string Name { get; init; }
     public int Duration { get; init; }
+    public double RiskLevel { get; init; }
 }

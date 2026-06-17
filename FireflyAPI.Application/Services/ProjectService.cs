@@ -111,7 +111,7 @@ public class ProjectService
             Description = project.Description,
             CreatedAt = project.CreatedAt,
             StartTime = project.StartTime,
-
+            TotalRiskLevel = project.TotalRiskLevel,
             Activities = activities
                 .Select(a => new ActivityDto
                 {

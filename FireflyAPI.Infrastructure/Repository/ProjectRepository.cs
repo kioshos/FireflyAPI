@@ -39,7 +39,7 @@ public class ProjectRepository : IProjectRepository
         
         targetEntity.Name = entity.Name;
         targetEntity.Description = entity.Description;
-
+        targetEntity.TotalRiskLevel = entity.TotalRiskLevel;
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 

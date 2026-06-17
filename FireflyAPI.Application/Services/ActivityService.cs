@@ -41,10 +41,12 @@ public class ActivityService
         if (project == null)
             throw new Exception("Project was not found!");
 
-        var activity = new Activity(projectId, activityRequestDto.Duration, activityRequestDto.Name);
+        var activity = new Activity(projectId, activityRequestDto.Duration, activityRequestDto.Name, activityRequestDto.RiskLevel);
 
         await _activityRepository.AddAsync(activity, ct);
 
+        await RecalculateProjectRiskAsync(activity.ProjectId, ct);
+        
         return activity.Id;
     }
     
@@ -54,24 +56,21 @@ public class ActivityService
         var activity = await _activityRepository.GetByIdAsync(predecessorsRequestDto.ActivityId, cancellationToken);
         if (activity == null)
             throw new Exception("Activity was not found!");
-       
-        var predecessors = await _activityRepository.GetByIdsAsync(predecessorsRequestDto.PredecessorIds, 
-            cancellationToken);
-       
+
+        await _activityDependencyRepository.DeleteByActivityIdAsync(predecessorsRequestDto.ActivityId, cancellationToken);
+
+        var predecessors = await _activityRepository.GetByIdsAsync(predecessorsRequestDto.PredecessorIds, cancellationToken);
+
         if (predecessors.Count() != predecessorsRequestDto.PredecessorIds.Count)
             throw new Exception("One or more predecessors were not found.");
-       
+
         foreach (var predecessor in predecessors)
         {
             if (predecessor.ProjectId != activity.ProjectId)
                 throw new Exception("Activities from different project!");
 
-            var dependency = new ActivityDependency(
-                activity.Id,
-                predecessor.Id);
-
             await _activityDependencyRepository.AddAsync(
-                dependency,
+                new ActivityDependency(activity.Id, predecessor.Id),
                 cancellationToken);
         }
     }
@@ -116,18 +115,23 @@ public class ActivityService
             throw new Exception("Activity was not found!");
 
         await _activityRepository.DeleteAsync(activity, cancellationToken);
+        
+        await RecalculateProjectRiskAsync(activity.ProjectId, cancellationToken);
     }
     public async Task Edit(Guid activityId, EditActivityRequestDto request, CancellationToken ct = default)
     {
-        var activity = await _activityRepository.GetByIdAsync(activityId, ct);
+       var activity = await _activityRepository.GetByIdAsync(activityId, ct);
 
         if (activity == null)
             throw new Exception("Activity was not found!");
 
         activity.Name = request.Name;
         activity.Duration = request.Duration;
-
+        activity.RiskLevel = request.RiskLevel; 
+        
         await _activityRepository.UpdateAsync(activity, ct);
+        
+        await RecalculateProjectRiskAsync(activity.ProjectId, ct);
     }
       public async Task<IEnumerable<ActivityDetailDto>> GetActivities(Guid projectId, CancellationToken ct)
     {
@@ -174,7 +178,7 @@ public class ActivityService
             Id = a.Id,
             Name = a.Name,
             Duration = a.Duration,
-
+            RiskLevel = a.RiskLevel,
             Predecessors = groupedDeps.ContainsKey(a.Id)
                 ? groupedDeps[a.Id]
                     .Where(id => predecessorMap.ContainsKey(id))
@@ -200,6 +204,31 @@ public class ActivityService
                     .ToList()
                 : new List<ResourceDto>()
         });
+    }
+    private async Task RecalculateProjectRiskAsync(Guid projectId, CancellationToken ct)
+    {
+        var project = await _projectRepository.GetByIdAsync(projectId, ct);
+        if (project == null) return;
+
+        var allActivities = await _activityRepository.GetByProjectIdAsync(projectId, ct);
+
+        double calculatedRisk = 0;
+        if (allActivities.Any())
+        {
+            double totalDuration = allActivities.Sum(a => a.Duration);
+        
+            if (totalDuration > 0)
+            {
+                calculatedRisk = allActivities.Sum(a => a.RiskLevel * a.Duration) / totalDuration;
+            }
+            else
+            {
+                calculatedRisk = allActivities.Average(a => a.RiskLevel);
+            }
+        }
+
+        project.TotalRiskLevel = Math.Round(calculatedRisk, 2);
+        await _projectRepository.UpdateAsync(project, ct);
     }
 
 

@@ -52,6 +52,16 @@ public class ActivityDependencyRepository : IActivityDependencyRepository
                       td.PredecessorActivityId == predecessorId, cancellationToken);
     }
 
+    public async Task DeleteByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.ActivityDependencies
+            .Where(x => x.ActivityId == activityId)
+            .ToListAsync(cancellationToken);
+
+        _dbContext.ActivityDependencies.RemoveRange(entities);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<ActivityDependency>> GetByActivityIdAsync(Guid activityId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.ActivityDependencies

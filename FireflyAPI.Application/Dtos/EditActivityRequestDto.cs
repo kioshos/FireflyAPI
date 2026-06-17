@@ -4,4 +4,5 @@ public class EditActivityRequestDto
 {
     public string Name { get; set; } = string.Empty;
     public int Duration { get; set; }
+    public double RiskLevel { get; set; }
 }

@@ -71,10 +71,12 @@ public class ResourceService
         CancellationToken cancellationToken = default)
     {
         var activity = await _activityRepository.GetByIdAsync(assignResourcesRequestDto.ActivityId, cancellationToken);
-        
+
         if (activity == null)
             throw new Exception("Activity was not found!");
-        
+
+        await _resourceRequirementRepository.DeleteByActivityIdAsync(assignResourcesRequestDto.ActivityId, cancellationToken);
+
         foreach (var resourceDto in assignResourcesRequestDto.Resources)
         {
             var resource = await _resourceRepository.GetByIdAsync(resourceDto.ResourceId, cancellationToken);
@@ -85,12 +87,9 @@ public class ResourceService
             if (resource.ProjectId != activity.ProjectId)
                 throw new Exception("Different project!");
 
-            var requirement = new ResourceRequirement(
-                activity.Id,
-                resource.Id,
-                resourceDto.Amount);
-
-            await _resourceRequirementRepository.AddAsync(requirement, cancellationToken);
+            await _resourceRequirementRepository.AddAsync(
+                new ResourceRequirement(activity.Id, resource.Id, resourceDto.Amount),
+                cancellationToken);
         }
     }
     

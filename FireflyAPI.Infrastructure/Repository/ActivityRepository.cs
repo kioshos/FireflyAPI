@@ -39,6 +39,7 @@ public class ActivityRepository : IActivityRepository
 
         targetEntity.Name = entity.Name;
         targetEntity.Duration = entity.Duration;
+        targetEntity.RiskLevel = entity.RiskLevel;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
     }

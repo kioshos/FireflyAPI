@@ -19,7 +19,7 @@ public class OptimizationContextBuilder
             {
                 OriginalId = activity.Id,
                 Name = activity.Name,
-                Duration = new FuzzyDuration(activity.Duration, 0.5)
+                Duration = new FuzzyDuration(activity.Duration, activity.RiskLevel)
             };
         }
 
