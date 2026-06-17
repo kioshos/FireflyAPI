@@ -1,4 +1,6 @@
 using FireflyAPI.Application.Interfaces;
+using FireflyAPI.Application.Optimization;
+using FireflyAPI.Application.Optimization.Interfaces;
 using FireflyAPI.Application.Services;
 using FireflyAPI.Domain.Entities;
 using FireflyAPI.Infrastructure;
@@ -22,6 +24,8 @@ builder.Services.AddScoped<IRepository<Activity>, ActivityRepository>();
 builder.Services.AddScoped<IRepository<Resource>, ResourceRepository>();
 builder.Services.AddScoped<IResourceRequirementRepository, ResourceRequirementRepository>();
 builder.Services.AddScoped<IActivityDependencyRepository, ActivityDependencyRepository>();
+builder.Services.AddScoped<IProjectOptimizer, PsoProjectOptimizer>();
+builder.Services.AddScoped<IProjectOptimizationService, ProjectOptimizationService>();
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();

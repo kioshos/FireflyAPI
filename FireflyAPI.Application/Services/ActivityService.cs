@@ -9,13 +9,17 @@ public class ActivityService
     private readonly IActivityDependencyRepository _activityDependencyRepository;
     private readonly IActivityRepository _activityRepository;
     private readonly IProjectRepository _projectRepository;
-
+    private readonly IResourceRequirementRepository _resourceRequirementRepository;
+    private readonly IResourceRepository _resourceRepository;
     public ActivityService(IActivityDependencyRepository activityDependencyRepository,
-        IActivityRepository activityRepository, IProjectRepository projectRepository)
+        IActivityRepository activityRepository, IProjectRepository projectRepository,
+        IResourceRequirementRepository resourceRequirementRepository, IResourceRepository resourceRepository)
     {
         _activityDependencyRepository = activityDependencyRepository;
         _activityRepository = activityRepository;
         _projectRepository = projectRepository;
+        _resourceRequirementRepository = resourceRequirementRepository;
+        _resourceRepository = resourceRepository;
     }
 
     public async Task<IEnumerable<Activity>> GetActivities(CancellationToken ct)
@@ -125,12 +129,13 @@ public class ActivityService
 
         await _activityRepository.UpdateAsync(activity, ct);
     }
-    public async Task<IEnumerable<ActivityDetailDto>> GetActivities(Guid projectId, CancellationToken ct)
+      public async Task<IEnumerable<ActivityDetailDto>> GetActivities(Guid projectId, CancellationToken ct)
     {
         var activities = await _activityRepository.GetByProjectIdAsync(projectId, ct);
 
         var activityIds = activities.Select(a => a.Id).ToList();
         var dependencies = await _activityDependencyRepository.GetByActivityIdsAsync(activityIds, ct);
+        var resourceRequirements = await _resourceRequirementRepository.GetByTaskIdsAsync(activityIds, ct);
 
         var groupedDeps = dependencies
             .GroupBy(d => d.ActivityId)
@@ -138,11 +143,27 @@ public class ActivityService
                 x => x.Key,
                 x => x.Select(d => d.PredecessorActivityId).ToList()
             );
+        
+        var groupedResources = resourceRequirements
+            .GroupBy(r => r.ActivityId)
+            .ToDictionary(
+                x => x.Key,
+                x => x.ToList()
+            );
 
         var predecessorIds = dependencies
             .Select(d => d.PredecessorActivityId)
             .Distinct()
             .ToList();
+        
+        var resourceIds = resourceRequirements
+            .Select(r => r.ResourceId)
+            .Distinct()
+            .ToList();
+
+        var resources = await _resourceRepository.GetByIdsAsync(resourceIds, ct);
+
+        var resourceMap = resources.ToDictionary(r => r.Id);
         
         var predecessorActivities = await _activityRepository.GetByIdsAsync(predecessorIds, ct);
         
@@ -165,8 +186,21 @@ public class ActivityService
                         Duration = p.Duration
                     })
                     .ToList()
-                : new List<ActivityDto>()
+                : new List<ActivityDto>(),
+            
+            Resources = groupedResources.ContainsKey(a.Id)
+                ? groupedResources[a.Id]
+                    .Where(r => resourceMap.ContainsKey(r.ResourceId))
+                    .Select(r => new ResourceDto
+                    {
+                        Id = r.ResourceId,
+                        Name = resourceMap[r.ResourceId].Name,
+                        Amount = r.Amount
+                    })
+                    .ToList()
+                : new List<ResourceDto>()
         });
     }
+
 
 }

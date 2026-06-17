@@ -24,6 +24,6 @@ public class ActivityDependencyConfiguration : IEntityTypeConfiguration<Activity
        builder.HasOne<Activity>()
            .WithMany()
            .HasForeignKey(ad => ad.PredecessorActivityId)
-           .OnDelete(DeleteBehavior.Restrict);
+           .OnDelete(DeleteBehavior.Cascade);
     }
 }

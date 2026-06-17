@@ -15,10 +15,11 @@ namespace FireflyAPI.Controllers;
 public class ProjectController : ControllerBase
 {
     private readonly ProjectService _projectService;
-    
-    public ProjectController(ProjectService projectService)
+    private readonly IProjectOptimizationService _optimizationService;
+    public ProjectController(ProjectService projectService, IProjectOptimizationService optimizationService)
     {
         _projectService = projectService;
+        _optimizationService = optimizationService;
     }
 
     [Authorize]
@@ -62,5 +63,13 @@ public class ProjectController : ControllerBase
         await _projectService.DeleteProject(id, ct);
 
         return NoContent();
+    }
+    [Authorize]
+    [HttpPost("{id}/optimize")]
+    public async Task<IActionResult> Optimize(Guid id, CancellationToken ct)
+    {
+        var result = await _optimizationService.OptimizeProject(id, ct);
+
+        return Ok(result);
     }
 }

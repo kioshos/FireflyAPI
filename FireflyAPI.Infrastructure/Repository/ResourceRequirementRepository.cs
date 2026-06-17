@@ -59,8 +59,11 @@ public class ResourceRequirementRepository : IResourceRequirementRepository
             .ToListAsync(cancellationToken);
     }
 
-    public Task<IEnumerable<ResourceRequirement>> GetByTaskIdsAsync(List<Guid> taskIds, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ResourceRequirement>> GetByTaskIdsAsync(List<Guid> taskIds, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.ResourceRequirements
+            .AsNoTracking()
+            .Where(r => taskIds.Contains(r.ActivityId))
+            .ToListAsync(cancellationToken);
     }
 }

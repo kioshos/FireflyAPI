@@ -53,4 +53,12 @@ public class ResourceRepository : IResourceRepository
     {
         return await _dbContext.Resources.Where(r =>r.ProjectId == projectId).ToListAsync(cancellationToken);
     }
+    public async Task<List<Resource>> GetByIdsAsync(List<Guid> ids, CancellationToken ct = default)
+    {
+        return await _dbContext.Resources
+            .AsNoTracking()
+            .Where(r => ids.Contains(r.Id))
+            .ToListAsync(ct);
+    }
+
 }

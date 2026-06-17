@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FireflyAPI.Application.Optimization\FireflyAPI.Application.Optimization.csproj" />
       <ProjectReference Include="..\FireflyAPI.Domain\FireflyAPI.Domain.csproj" />
     </ItemGroup>
 
